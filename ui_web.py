@@ -1,5 +1,6 @@
 import os
 
+# streamlit：Python 快速构建 Web 应用的框架，无需前端代码，类似 Android 的 Jetpack Compose（声明式 UI）
 import streamlit as st
 import base64
 from PIL import Image
@@ -16,14 +17,16 @@ sysmenu = '''
 footer {visibility:hidden;}
 '''
 st.markdown(sysmenu,unsafe_allow_html=True)
+# st.columns：将页面划分为多列布局，类似 Android 的横向 LinearLayout
 col1, col2 = st.columns(2)
 
 with col1:
+    # st.file_uploader：文件上传组件，type 限制可上传的文件类型
     uploaded_file = st.file_uploader("上传pdf", type=["pdf"])
     if uploaded_file is not None:
         pdf_save_path = os.path.join(save_pdf_dir, uploaded_file.name)
         with open(pdf_save_path, "wb") as f:
-            f.write(uploaded_file.getbuffer())
+            f.write(uploaded_file.getbuffer())  # getbuffer()：获取上传文件的字节内容
         if st.button('解析PDF'):
             if os.path.exists(pdf_save_path):
                 # parse pdf
@@ -41,10 +44,6 @@ with col1:
                 st.write('解析PDF成功！')
             else:
                 st.write('PDF文件不能为空！')
-
-        # base64_pdf = base64.b64encode(uploaded_file.read()).decode('utf-8')
-        # pdf_display = f'<embed src="data:application/pdf;base64,{base64_pdf}" type="application/pdf">'
-        # st.markdown(pdf_display, unsafe_allow_html=True)
 
 with col2:
     query = st.text_area('输入问句：', height=100)
@@ -65,8 +64,7 @@ with col2:
             for hit in image_hits:
                 image_path = hit.payload['image_path']
                 img = Image.open(image_path)
-                st.image(img)
+                st.image(img)  # st.image：直接渲染 PIL Image 或图片路径到页面
                 st.markdown('---------', unsafe_allow_html=True)
         else:
             st.write("问句不能为空！")
-

@@ -6,6 +6,11 @@ from .utils.load_image import LoadImage
 
 
 class TableDetector:
+    """
+    表格检测器顶层封装，对外提供统一的调用接口。
+    内部使用 Det 完成 ONNX 模型推理，输出每个表格的四角坐标。
+    """
+
     def __init__(
         self,
         use_cuda=False,
@@ -26,6 +31,10 @@ class TableDetector:
         img,
         det_accuracy=0.8,
     ):
+        """
+        检测图像中的表格，返回每个表格的边框坐标和四角点。
+        返回列表中每个元素格式：{"box": [xmin,ymin,xmax,ymax], "lt": [x,y], "rt": [x,y], "rb": [x,y], "lb": [x,y]}
+        """
         img = self.img_loader(img)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         h, w = img.shape[:-1]
@@ -104,6 +113,7 @@ class TableDetector:
         return lb, lt, rb, rt
 
     def get_real_rotated_points(self, lb, lt, pred_label, rb, rt):
+        """根据方向分类结果（pred_label 0~3）旋转四角坐标，使 lt 始终对应实际左上角。"""
         if pred_label == 0:
             lt1 = lt
             rt1 = rt
@@ -137,4 +147,3 @@ class TableDetector:
         ymax_edge = min(ymax + pad, h)
         xmax_edge = min(xmax + pad, w)
         return xmin_edge, ymin_edge, xmax_edge, ymax_edge
-

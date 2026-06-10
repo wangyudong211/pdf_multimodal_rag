@@ -11,18 +11,24 @@ from .utils.transform import (
 )
 
 class Det:
+    """表格目标检测器，基于 ONNX 模型，输出检测到的表格边框列表。"""
+
     def __init__(self, config: Dict[str, Any]):
-        self.model = OrtInferSession(config)
+        self.model = OrtInferSession(config)  # 加载 ONNX 推理会话
         self.img_loader = LoadImage()
         self.resize_shape = [928, 928]
 
     def __call__(self, img, **kwargs):
+        """
+        __call__：实例直接调用触发检测，等价于 Kotlin 的 operator fun invoke()。
+        **kwargs：可变关键字参数，类似 Kotlin 的 vararg 但以 key=value 形式传入，这里用于传入 score 阈值。
+        """
         start = time.time()
-        score = kwargs.get("score", 0.4)
+        score = kwargs.get("score", 0.4)  # 从 kwargs 中取置信度阈值，默认 0.4
         img = self.img_loader(img)
-        ori_h, ori_w = img.shape[:-1]
+        ori_h, ori_w = img.shape[:-1]  # shape[:-1] 取除最后一维（通道）外的所有维度，即 (H, W)
         img, new_w, new_h, left, top = self.img_preprocess(img, self.resize_shape)
-        pre = self.model([img])
+        pre = self.model([img])  # 执行 ONNX 推理，输入为 list[ndarray]
         result = self.img_postprocess(
             pre, ori_w / new_w, ori_h / new_h, left, top, score
         )
@@ -30,9 +36,9 @@ class Det:
 
     def img_preprocess(self, img, resize_shape=[928, 928]):
         im, new_w, new_h, left, top = ResizePad(img, resize_shape[0])
-        im = im / 255.0
-        im = im.transpose((2, 0, 1)).copy()
-        im = im[None, :].astype("float32")
+        im = im / 255.0                          # 像素归一化到 [0, 1]
+        im = im.transpose((2, 0, 1)).copy()      # HWC → CHW：将通道维度移到最前，模型输入要求此格式
+        im = im[None, :].astype("float32")       # 增加 batch 维度：CHW → 1CHW（None 等价于 np.newaxis）
         return im, new_w, new_h, left, top
 
     def img_postprocess(self, predict_maps, x_factor, y_factor, left, top, score):
@@ -65,4 +71,3 @@ class Det:
         for i in indices:
             result.append([scores[i], np.array(boxes[i])])
         return result
-

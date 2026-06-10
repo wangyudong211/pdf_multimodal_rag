@@ -1,0 +1,1 @@
+- [user_profile](user_profile.md) — 用户背景：10年 Android 开发工程师，熟悉 Java/Kotlin/TS，初学 Python 和 AI 工程

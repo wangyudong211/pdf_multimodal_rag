@@ -5,6 +5,7 @@ from init_load_model import store_vec, text_embedding
 
 
 def text_image_retriever(query, q_client):
+    """将查询文本向量化后，分别在文本和图片集合中做向量相似度检索，返回 top-5 结果。"""
     query = text_embedding.get_text_embedding(query)
 
     # Retrieve text hits
@@ -40,6 +41,7 @@ def retriever_result_display(text_hits, image_hits):
 
     print("\n图片结果:")
 
+    # plt.subplots：创建多子图画布，figsize 单位为英寸
     fig, axes = plt.subplots(1, len(image_hits), figsize=(15, 5))  # Adjust figsize as needed
     for ax, hit in zip(axes, image_hits):
         image_path = hit.payload['image_path']
